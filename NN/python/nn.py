@@ -47,6 +47,11 @@ def TrainNN(num_hiddens, eps, momentum, num_epochs):
 
     # Compute cross entropy
     train_CE = -np.mean(target_train * np.log(prediction) + (1 - target_train) * np.log(1 - prediction))
+    # incorr = 0.0
+    # for i in range(len(target_train[0])):
+    #   if (prediction[0][i] > 0.5 and target_train[0][i] == 0.0) or (prediction[0][i] <= 0.5 and target_train[0][i] == 1.0):
+    #     incorr += 1
+    # train_CE = incorr/len(target_train[0])
 
     # Compute deriv
     dEbydlogit = prediction - target_train
@@ -95,6 +100,11 @@ def Evaluate(inputs, target, W1, W2, b1, b2):
   logit = np.dot(W2.T, h_output) + b2  # Input to output layer.
   prediction = 1 / (1 + np.exp(-logit))  # Output prediction.
   CE = -np.mean(target * np.log(prediction) + (1 - target) * np.log(1 - prediction))
+  # incorr = 0.0
+  # for i in range(len(target[0])):
+  #   if (prediction[0][i] > 0.5 and target[0][i] == 0.0) or (prediction[0][i] <= 0.5 and target[0][i] == 1.0):
+  #     incorr += 1
+  # CE = incorr/len(target[0])
   return CE
 
 def DisplayErrorPlot(train_error, valid_error):
@@ -121,9 +131,9 @@ def LoadModel(modelfile):
   return model['W1'], model['W2'], model['b1'], model['b2'], model['train_error'], model['valid_error']
 
 def main():
-  num_hiddens = 10
-  eps = 0.1
-  momentum = 0.0
+  num_hiddens = 100
+  eps = 0.02
+  momentum = 0.5
   num_epochs = 1000
   W1, W2, b1, b2, train_error, valid_error = TrainNN(num_hiddens, eps, momentum, num_epochs)
   DisplayErrorPlot(train_error, valid_error) 
