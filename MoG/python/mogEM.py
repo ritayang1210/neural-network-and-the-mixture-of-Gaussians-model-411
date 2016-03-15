@@ -1,6 +1,7 @@
 from kmeans import *
 import sys
 import matplotlib.pyplot as plt
+from nn import *
 plt.ion()
 
 def mogEM(x, K, iters, minVary=0):
@@ -18,8 +19,8 @@ def mogEM(x, K, iters, minVary=0):
     vary = variances for the cth cluster, one in each column.
     logProbX = log-probability of data after every iteration.
   """
-  N, T = x.shape
-
+  N, T = x.shape 
+  ''
   # Initialize the parameters
   randConst = 1
   p = randConst + np.random.rand(K, 1)
@@ -29,7 +30,9 @@ def mogEM(x, K, iters, minVary=0):
  
   # Change the initializaiton with Kmeans here
   #--------------------  Add your code here --------------------  
-  mu = mn + np.random.randn(N, K) * (np.sqrt(vr) / randConst)
+  # mu = mn + np.random.randn(N, K) * (np.sqrt(vr) / randConst)
+  
+  mu = KMeans(x, K, iters)
   
   #------------------------------------------------------------  
   vary = vr * np.ones((1, K)) * 2
@@ -65,7 +68,7 @@ def mogEM(x, K, iters, minVary=0):
     plt.figure(1);
     plt.clf()
     plt.plot(np.arange(i), logProbX[:i], 'r-')
-    plt.title('Log-probability of data versus # iterations of EM')
+    plt.title('Log-probability of data versus 30 iterations of EM(original initialization)')
     plt.xlabel('Iterations of EM')
     plt.ylabel('log P(D)');
     plt.draw()
@@ -101,15 +104,38 @@ def mogLogProb(p, mu, vary, x):
     logProb[t] = np.log(np.sum(np.exp(logPcAndx - mx))) + mx;
   return logProb
 
+def q2():
+  inputs_train, inputs_valid, inputs_test, target_train, target_valid, target_test = LoadData('digits.npz')
+  train2, valid2, test2, target_train2, target_valid2, target_test2 = LoadData('digits.npz', True, False)
+  train3, valid3, test3, target_train3, target_valid3, target_test3 = LoadData('digits.npz', False, True)
+  iters = 20
+  minVary = 0.01
+  K = 2
+  p2, mu2, vary2, logProbX2 = mogEM(train2, K, iters, minVary)
+  ShowMeans(mu2)
+  ShowMeans(vary2)
+  print logProbX2[-1]
+
+  p3, mu3, vary3, logProbX3 = mogEM(train3, K, iters, minVary)
+  ShowMeans(mu3)
+  ShowMeans(vary3)
+  print logProbX3[-1]
+
+
+
 def q3():
-  iters = 10
+  iters = 30
   minVary = 0.01
   inputs_train, inputs_valid, inputs_test, target_train, target_valid, target_test = LoadData('digits.npz')
   # Train a MoG model with 20 components on all 600 training
   # vectors, with both original initialization and kmeans initialization.
   #------------------- Add your code here ---------------------
+  K = 20
+  p, mu, vary, logProbX = mogEM(inputs_train, K, iters, minVary)
 
   raw_input('Press Enter to continue.')
+
+
 def q4():
   iters = 10
   minVary = 0.01
@@ -122,30 +148,63 @@ def q4():
   inputs_train, inputs_valid, inputs_test, target_train, target_valid, target_test = LoadData('digits.npz')
   train2, valid2, test2, target_train2, target_valid2, target_test2 = LoadData('digits.npz', True, False)
   train3, valid3, test3, target_train3, target_valid3, target_test3 = LoadData('digits.npz', False, True)
-  
+
   for t in xrange(T): 
     K = numComponents[t]
     # Train a MoG model with K components for digit 2
     #-------------------- Add your code here --------------------------------
-
+    p2, mu2, vary2, logProbX2 = mogEM(train2, K, iters, minVary)
     
-    # Train a MoG model with K components for digit 3
+    # Train a MoG modewithl  K components for digit 3
     #-------------------- Add your code here --------------------------------
+    p3, mu3, vary3, logProbX3 = mogEM(train3, K, iters, minVary)
 
-    
     # Caculate the probability P(d=1|x) and P(d=2|x),
     # classify examples, and compute error rate
     # Hints: you may want to use mogLogProb function
     #-------------------- Add your code here --------------------------------
-    
-    
+    logProb2_train = mogLogProb(p2, mu2, vary2, inputs_train)
+    logProb3_train = mogLogProb(p3, mu3, vary3, inputs_train)
+    errorTrain[t] = computeErrorRate(logProb2_train, logProb3_train, target_train)
+
+    logProb2_valid = mogLogProb(p2, mu2, vary2, inputs_valid)
+    logProb3_valid = mogLogProb(p3, mu3, vary3, inputs_valid)
+    errorValidation[t] = computeErrorRate(logProb2_valid, logProb3_valid, target_valid)
+
+    logProb2_test = mogLogProb(p2, mu2, vary2, inputs_test)
+    logProb3_test = mogLogProb(p3, mu3, vary3, inputs_test)
+    errorTest[t] = computeErrorRate(logProb2_test, logProb3_test, target_test)
+    # count3 = np.count_nonzero(target_train)
+    # countTotal = target_train.shape[1]
+    # count2 = countTotal - count3
+    # prob2 = count2/countTotal
+    # prob3 = count3/countTotal
+
   # Plot the error rate
   plt.clf()
   #-------------------- Add your code here --------------------------------
-  
+  plt.plot(numComponents, errorTrain, 'r', label='TrainingSet')
+  plt.plot(numComponents, errorValidation, 'b', label='ValidationSet')
+  plt.plot(numComponents, errorTest, 'g', label='TestSet')
+  plt.legend(bbox_to_anchor=(1, 1),
+           bbox_transform=plt.gcf().transFigure)
+  plt.title('Classification error rates of different # of mixture components')
+  plt.xlabel('# of mixture components')
+  plt.ylabel('Classification error rates');
+  plt.axis('tight')
 
   plt.draw()
   raw_input('Press Enter to continue.')
+
+def computeErrorRate(logProb2, logProb3, target):
+  incorr = 0
+  for i in range(target.shape[1]):
+    # print logProb2[i]
+    # print target[0][i]
+    if (logProb2[i] > logProb3[i] and target[0][i] == 1.0) or (logProb2[i] < logProb3[i] and target[0][i] == 0.0):
+      incorr += 1
+  errorRate = float(incorr)/target.shape[1]
+  return errorRate
 
 def q5():
   # Choose the best mixture of Gaussian classifier you have, compare this
@@ -157,11 +216,34 @@ def q5():
 
   # Show the error rate comparison.
   #-------------------- Add your code here --------------------------------
+  inputs_train, inputs_valid, inputs_test, target_train, target_valid, target_test = LoadData('digits.npz')
+  train2, valid2, test2, target_train2, target_valid2, target_test2 = LoadData('digits.npz', True, False)
+  train3, valid3, test3, target_train3, target_valid3, target_test3 = LoadData('digits.npz', False, True)
+
+  K = 2
+  iters = 30
+  minVary = 0.01
+  p2, mu2, vary2, logProbX2 = mogEM(train2, K, iters, minVary)
+  p3, mu3, vary3, logProbX3 = mogEM(train3, K, iters, minVary)
+
+  logProb2_test = mogLogProb(p2, mu2, vary2, inputs_test)
+  logProb3_test = mogLogProb(p3, mu3, vary3, inputs_test)
+  errorRate_test_MoG = computeErrorRate(logProb2_test, logProb3_test, target_test)
+
+  num_hiddens = 4
+  eps = 0.2
+  momentum = 0.0
+  num_epochs = 1000
+  W1, W2, b1, b2, train_error, valid_error, test_error_NN = TrainNN(num_hiddens, eps, momentum, num_epochs)
+  print errorRate_test_MoG
+  print test_error_NN
+  ShowMeans(W1)
 
   raw_input('Press Enter to continue.')
 
 if __name__ == '__main__':
-  q3()
-  q4()
+  # q2()
+  # q3()
+  # q4()
   q5()
 
