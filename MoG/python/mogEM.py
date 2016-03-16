@@ -220,7 +220,7 @@ def q5():
   train2, valid2, test2, target_train2, target_valid2, target_test2 = LoadData('digits.npz', True, False)
   train3, valid3, test3, target_train3, target_valid3, target_test3 = LoadData('digits.npz', False, True)
 
-  K = 2
+  K = 15
   iters = 30
   minVary = 0.01
   p2, mu2, vary2, logProbX2 = mogEM(train2, K, iters, minVary)
@@ -230,9 +230,9 @@ def q5():
   logProb3_test = mogLogProb(p3, mu3, vary3, inputs_test)
   errorRate_test_MoG = computeErrorRate(logProb2_test, logProb3_test, target_test)
 
-  num_hiddens = 4
+  num_hiddens = 30
   eps = 0.2
-  momentum = 0.0
+  momentum = 0.5
   num_epochs = 1000
   W1, W2, b1, b2, train_error, valid_error, test_error_NN = TrainNN(num_hiddens, eps, momentum, num_epochs)
   print errorRate_test_MoG

@@ -131,9 +131,9 @@ def LoadModel(modelfile):
   return model['W1'], model['W2'], model['b1'], model['b2'], model['train_error'], model['valid_error']
 
 def main():
-  num_hiddens = 100
-  eps = 0.02
-  momentum = 0.5
+  num_hiddens = 10
+  eps = 0.2
+  momentum = 0.9
   num_epochs = 1000
   W1, W2, b1, b2, train_error, valid_error = TrainNN(num_hiddens, eps, momentum, num_epochs)
   DisplayErrorPlot(train_error, valid_error) 
