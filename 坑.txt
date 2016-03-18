@@ -1,0 +1,21 @@
+2.1
+Usually, we should have better performance on training set than validation set. The error should go down faster during each epoch with training set and end result should be better. These are confirmed with the plot.
+
+2.3
+In both cross entropy and classification error, we have seeing a much faster convergence speed when using bigger learning rate on both training and validation sets. However, sometimes we are ending up with worse performance (or say higher error rate) when using bigger learning rate on validation set. 
+With bigger momentum, we are converging faster with both cross entropy and classification error. I will choose the value with best performance on validation set which is m = 0.5 in our test cases.
+
+2.4
+With bigger number of hidden units, we are converging faster and achiving better generalization as getting lower error on validation set.
+
+3.3
+Initialization with k-means end up converging faster and having higher log probability than random initialization.
+
+3.4
+1. With higher number of clusters on training set, we are trying to split the data set into smaller trunk even though it's not necessary as some trunks of data in reality belong to the same cluster. However, by having smaller trunk, we tend to fit all data and even noise pretty well which achives lower error rates.
+2. The error rate of test set is going down as number of clusters increase until it reach 15 and then it goes up when we have 25 clusters. This is happening typically because with 25 clusters, we are overfitting the data and those noises in training data now are significantly affecting our judgement on the test data.
+3. I would choose the model with 15 clusters as it's achiving the lowest error rate on test data and it doesn't seem to overfit the data.
+
+3.5
+From the experiment of part 3.5, we got 0.0125 error for MOG and 0.0692 for NN. Clearly, we can see that MOG achives significantly better performance than NN. 
+As for the images of weights, since we are having number of hidden units equal to the number of mixture components in the mixture model with digit 2 and 3 combined, it's really hard to tell the shape of those weights images. It somehow resembles hand-written 2's and 3's but it's really hard to tell. 
